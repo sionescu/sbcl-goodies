@@ -1,0 +1,31 @@
+diff -Naur openssl-3.0.2.old/debian/rules openssl-3.0.2/debian/rules
+--- openssl-3.0.2.old/debian/rules	2023-02-17 10:31:59.083485990 -0500
++++ openssl-3.0.2/debian/rules	2023-02-17 10:31:48.531457045 -0500
+@@ -67,13 +67,6 @@
+ 
+ override_dh_auto_build-arch:
+ 	$(MAKE) -C build_static all
+-	test -z "$(OPTS)" || for opt in $(OPTS); \
+-	do \
+-		set -xe; \
+-		$(MAKE) -C build_$$opt all; \
+-	done
+-	ln -sf apps/openssl.pod crypto/crypto.pod ssl/ssl.pod doc/
+-	$(MAKE) -C build_shared all
+ 
+ override_dh_auto_test-indep:
+ 
+@@ -81,13 +74,7 @@
+ ifneq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
+ 	@echo Skipping tests
+ else
+-	test -z "$(OPTS)" || for opt in $(OPTS); \
+-	do \
+-		set -xe; \
+-		$(MAKE) -C build_$$opt test $(TESTSUITE_FLAGS); \
+-	done
+ 	$(MAKE) -C build_static test $(TESTSUITE_FLAGS)
+-	$(MAKE) -C build_shared test $(TESTSUITE_FLAGS)
+ endif
+ 
+ override_dh_auto_clean:

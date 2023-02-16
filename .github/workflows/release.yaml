@@ -1,0 +1,129 @@
+name: Release
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout build scripts
+        uses: actions/checkout@v3
+      - name: Read build.env
+        id: buildenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: build.env
+          log-variables: true
+          mask-variables: false
+      - name: Export build.env
+        run: |
+          echo "SBCL_HOST_VERSION=${{ steps.buildenv.outputs.sbcl_host_version }}" >> ${GITHUB_ENV}
+          echo "SBCL_VERSION=${{ steps.buildenv.outputs.sbcl_version }}" >> ${GITHUB_ENV}
+          echo "LIBFIXPOSIX_VERSION=${{ steps.buildenv.outputs.libfixposix_version }}" >> ${GITHUB_ENV}
+          echo "OPENSSL_VERSION=${{ steps.buildenv.outputs.openssl_version }}" >> ${GITHUB_ENV}
+          echo "REVISION=${{ steps.buildenv.outputs.revision }}" >> ${GITHUB_ENV}
+      - name: Install build deps
+        run: |
+          cat > sources.list << EOF
+          deb-src http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse
+          deb-src http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse
+          deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse
+          EOF
+          sudo cp sources.list /etc/apt/sources.list.d/
+          sudo apt -y update
+          sudo apt -y install build-essential emacs-bin-common check
+          sudo apt -y install libzstd-dev libssl-dev=${{ env.OPENSSL_VERSION }}
+      - name: Checkout libfixposix
+        uses: actions/checkout@v3
+        with:
+          repository: sionescu/libfixposix
+          ref: "v${{ env.LIBFIXPOSIX_VERSION }} "
+          path: libfixposix
+      - name: Setup build environment
+        run: |
+          CUSTOM_LIBDIR="${GITHUB_WORKSPACE}/static_libs"
+          mkdir -vp "${CUSTOM_LIBDIR}"
+          echo "CUSTOM_LIBDIR=${CUSTOM_LIBDIR}" >> "${GITHUB_ENV}"
+      - name: Build libfixposix
+        run: |
+          cd libfixposix
+          autoreconf -f -i
+          ./configure --enable-tests --enable-static
+          make -j4
+          make -j4 check
+          make install DESTDIR="${GITHUB_WORKSPACE}/destdir"
+          cp "${GITHUB_WORKSPACE}/destdir/usr/local/lib/libfixposix.a" "${{ env.CUSTOM_LIBDIR }}/"
+      - name: Fetch SBCL host
+        run: |
+          SRCDIR=sbcl-${SBCL_HOST_VERSION}-x86-64-linux
+          TARBALL=${SRCDIR}-binary.tar.bz2
+          wget https://pilotfiber.dl.sourceforge.net/project/sbcl/sbcl/${{ env.SBCL_VERSION }}/${TARBALL}
+          tar x -f ${TARBALL}
+          ln -sfv ${SRCDIR} sbcl-host
+          echo "Unpacked SBCL host to ${PWD}/sbcl-host"
+          echo SBCL_HOST="${GITHUB_WORKSPACE}/sbcl-host" >> ${GITHUB_ENV}
+      - name: Checkout SBCL
+        uses: actions/checkout@v3
+        with:
+          repository: sbcl/sbcl
+          ref: "sbcl-${{ env.SBCL_VERSION }}"
+          path: sbcl
+      - name: Patch SBCL
+        run: cd sbcl && patch -p1 -i ../customizations.patch
+      - name: Build SBCL
+        run: |
+          cd sbcl
+          rm -rf .git
+          echo "\"${{ env.SBCL_VERSION }}+r${{ env.REVISION }}\"" > version.lisp-expr
+          export CUSTOM_LIBDIR="${{ env.CUSTOM_LIBDIR }}"
+          export SYS_LIBDIR="/usr/lib/x86_64-linux-gnu"
+          env SBCL_MAKE_PARALLEL=1 \
+              SBCL_MAKE_JOBS=-j4 \
+              ./make.sh --xc-host="${{ env.SBCL_HOST }}/run-sbcl.sh --noinform --no-userinit" \
+                 --with-sb-core-compression \
+                 --with-sb-linkable-runtime \
+                 --without-sb-eval \
+                 --with-sb-fasteval
+          make -C src/runtime -f binaries.mk sbcl.extras
+          mv -vf src/runtime/sbcl.extras src/runtime/sbcl
+          mkdir -vp third_party/include
+          cp -av ../destdir/usr/local/include/* third_party/include/
+          cd ..
+          SRCDIST=sbcl-${{ env.SBCL_VERSION }}+r${{ env.REVISION }}
+          mv -v sbcl "${SRCDIST}"
+          "${SRCDIST}"/source-distribution.sh "${SRCDIST}"
+          bzip2 "${SRCDIST}"-source.tar
+          BINDIST="${SRCDIST}"-x86-64-linux
+          mv -v "${SRCDIST}" "${BINDIST}"
+          "${BINDIST}"/binary-distribution.sh "${BINDIST}"
+          bzip2 "${BINDIST}"-binary.tar
+          echo "###################################################"
+          echo "Created ${SRCDIST}-source.tar.bz2"
+          echo "Created ${BINDIST}-binary.tar.bz2"
+          echo "###################################################"
+          echo "SRCDIST=${SRCDIST}-source.tar.bz2" >> ${GITHUB_ENV}
+          echo "BINDIST=${BINDIST}-binary.tar.bz2" >> ${GITHUB_ENV}
+      - name: Upload release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+          git config user.name "Stelian Ionescu"
+          git config user.email "sionescu@cddr.org"
+          RELEASE="${{ env.SBCL_VERSION }}+r${{ env.REVISION }}"
+          TAG="v${RELEASE}"
+          cat > notes.md << EOF
+          # Components:
+           - SBCL ${{ env.SBCL_VERSION }}
+           - libfixposix ${{ env.LIBFIXPOSIX_VERSION }}
+           - OpenSSL ${{ env.OPENSSL_VERSION }}
+          EOF
+          git tag -m "Release ${RELEASE}" ${TAG}
+          git push --tags
+          gh release create ${TAG} \
+            --latest --title "SBCL ${RELEASE}" \
+            --notes-file notes.md \
+            ${{ env.SRCDIST }} \
+            ${{ env.BINDIST }}
