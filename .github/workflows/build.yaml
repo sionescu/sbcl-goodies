@@ -128,7 +128,7 @@ jobs:
   release:
     runs-on: ubuntu-20.04
     needs: build
-    if: github.ref == 'refs/heads/master'
+    if: github.ref_name == 'master'
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
