@@ -1,0 +1,90 @@
+name: Check for newer dependencies
+
+on:
+  schedule:
+    - cron: "37 0 * * *"
+  workflow_dispatch:
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  deps:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout build scripts
+        uses: actions/checkout@v3
+      - name: Read build.env
+        id: buildenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: build.env
+          log-variables: true
+          mask-variables: false
+      - name: Export build.env
+        run: |
+          echo "SBCL_HOST_VERSION=${{ steps.buildenv.outputs.sbcl_host_version }}" >> ${GITHUB_ENV}
+          echo "SBCL_VERSION=${{ steps.buildenv.outputs.sbcl_version }}" >> ${GITHUB_ENV}
+          echo "LIBFIXPOSIX_VERSION=${{ steps.buildenv.outputs.libfixposix_version }}" >> ${GITHUB_ENV}
+          echo "OPENSSL_VERSION=${{ steps.buildenv.outputs.openssl_version }}" >> ${GITHUB_ENV}
+          echo "REVISION=${{ steps.buildenv.outputs.revision }}" >> ${GITHUB_ENV}
+      - name: Install build deps
+        run: |
+          cat > sources.list << EOF
+          deb-src http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse
+          deb-src http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse
+          deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse
+          EOF
+          sudo mv sources.list /etc/apt/sources.list.d/
+          sudo apt -y update
+          sudo apt -y install libssl-dev=${{ env.OPENSSL_VERSION }}
+      - name: Check deps
+        run: |
+          new_sbcl=
+          new_deps=
+          NOTES="../notes.md"
+          echo '# Updates:' > ${NOTES}
+          LATEST_SBCL=$(gh release list -R sbcl/sbcl -L 1 \
+                         | perl -n -e'/Latest\W+sbcl-([.0-9]+)/ && print $1')
+          if [[ ${LATEST_SBCL} != ${SBCL_VERSION) ]]; then
+            new_sbcl=true
+            echo "New SBCL version ${SBCL_VERSION}"
+            echo " - SBCL ${SBCL_VERSION}" >> ${NOTES}
+            sed -i "/SBCL_VERSION=/c\\SBCL_VERSION=${LATEST_SBCL}" build.env
+          fi
+          LATEST_LIBFIXPOSIX=$(gh release list -R sionescu/libfixposix -L 1 \
+                                | perl -n -e'/Latest\W+v([.0-9]+)/ && print $1')
+          if [[ ${LATEST_LIBFIXPOSIX} != ${LIBFIXPOSIX_VERSION) ]]; then
+            new_deps=true
+            echo "New libfixposix version ${LIBFIXPOSIX_VERSION}"
+            echo " - libfixposix ${LIBFIXPOSIX_VERSION}" >> ${NOTES}
+            sed -i "/LIBFIXPOSIX_VERSION=/c\\LIBFIXPOSIX_VERSION=${LATEST_LIBFIXPOSIX}" build.env
+          fi
+          LATEST_OPENSSL=$(dpkg-query --show --showformat='${Version}' libssl-dev)
+          if [[ ${LATEST_OPENSSL} != ${OPENSSL_VERSION) ]]; then
+            new_deps=true
+            echo "New OpenSSL version ${OPENSSL_VERSION}"
+            echo " - OpenSSL ${OPENSSL_VERSION}" >> ${NOTES}
+            sed -i "/OPENSSL_VERSION=/c\\OPENSSL_VERSION=${LATEST_OPENSSL}" build.env
+          fi
+          if [[ ${new_deps} ]]; then
+            if [[ ${REVISION} == 99 ]];
+              echo "Already at revision 99. Something's wrong."
+              exit 1
+            fi
+            REVISION=$(printf '%02d' $(( REVISION + 1 )))
+          fi
+          if [[ ${new_sbcl} ]]; then
+            REVISION="00"
+          fi
+          sed -i "/REVISION=/c\\REVISION=${REVISION}" build.env
+          if [[ ${new_sbcl} || ${new_deps} ]]; then
+            truncate -s 1 ${NOTES}
+            MSG=$(cat ${NOTES} | sed -z -e 's:\n:,:g' -e 's: -::g')
+            new_branch=new_deps_$(date -u +%Y%m%dT%H%M)
+            git checkout -b "${new_branch}"
+            git add build.env
+            git commit -a -m "${MSG}"
+            gh pr create -B master -H "${new_branch}" \
+              --title "${MSG}" --body "Automatically created by Gihub action"
+          fi
