@@ -168,5 +168,5 @@ jobs:
           gh release create ${TAG} \
             --latest --title "SBCL ${RELEASE}" \
             --notes-file notes.md \
-            ${{ env.SRCDIST }} \
-            ${{ env.BINDIST }}
+            "sbcl-${RELEASE}-source.tar.bz2" \
+            "sbcl-${RELEASE}-x86-64-linux-binary.tar.bz2"
