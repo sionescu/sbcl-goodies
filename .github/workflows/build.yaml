@@ -10,6 +10,7 @@ on:
       - "build.env"
       - "**.patch"
       - "**/build.yaml"
+  workflow_dispatch:
 
 env:
   GH_TOKEN: ${{ github.token }}
