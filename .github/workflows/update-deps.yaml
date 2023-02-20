@@ -78,6 +78,8 @@ jobs:
             REVISION="00"
           fi
           sed -i "/REVISION=/c\\REVISION=${REVISION}" build.env
+          git config user.name "Stelian Ionescu"
+          git config user.email "sionescu@cddr.org"
           if [[ ${new_sbcl} || ${new_deps} ]]; then
             truncate -s 1 ${NOTES}
             MSG=$(cat ${NOTES} | sed -z -e 's:\n:,:g' -e 's: -::g')
