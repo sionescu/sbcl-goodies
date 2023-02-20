@@ -88,6 +88,7 @@ jobs:
             git checkout -b "${new_branch}"
             git add build.env
             git commit -a -m "${MSG}"
+            git push origin "${new_branch}:"${new_branch}
             gh pr create -B master -H "${new_branch}" \
               --title "${MSG}" --body "Automatically created by Gihub action"
           else
