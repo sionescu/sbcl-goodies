@@ -1,21 +1,6 @@
 #!/bin/bash
 
-if [[ -n ${RUNNER_DEBUG} ]]; then
-    set -x
-fi
-
-set -Eeuo pipefail
-
-function die() {
-    echo "${@}" >&2
-    exit 1
-}
-
-function join() {
-  local sep="${1}" ; shift
-  local first="${1}" ; shift
-  printf "%s" "${first}" "${@/#/${sep}}"
-}
+source $(dirname ${0})/lib.sh
 
 function new_dep() {
     local dep=${1}
@@ -62,19 +47,27 @@ if [[ ${new_sbcl} ]]; then
     echo "Resetting revision to 00"
     REVISION="00"
 fi
-sed -i "/REVISION=/c\\REVISION=${REVISION}" build.env
 
-git config user.name "Stelian Ionescu"
-git config user.email "sionescu@cddr.org"
 if [[ ${new_sbcl} || ${new_deps} ]]; then
-    MSG=$(join ", " "${notes[@]}")
+    # Git will fail without these
+    git config user.name "Stelian Ionescu"
+    git config user.email "sionescu@cddr.org"
+
     new_branch=new_deps_$(date -u +%Y%m%dT%H%M)
     git checkout -b "${new_branch}"
+
+    sed -i "/REVISION=/c\\REVISION=${REVISION}" build.env
     git add build.env
+
+    MSG=$(join ", " "${notes[@]}")
     git commit -a -m "${MSG}"
-    git push origin "${new_branch}:"${new_branch}
-    gh pr create -B master -H "${new_branch}" \
-       --title "${MSG}" --body "Automatically created by Gihub action"
+
+    git push origin "${new_branch}:${new_branch}"
+    gh pr create \
+       --base master \
+       --head "${new_branch}" \
+       --title "${MSG}" \
+       --body "Automatically created by Gihub action"
 else
     echo "No new deps detected."
 fi

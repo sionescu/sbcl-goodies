@@ -23,20 +23,14 @@ jobs:
           mask-variables: false
       - name: Export build.env
         run: |
-          echo "SBCL_HOST_VERSION=${{ steps.buildenv.outputs.sbcl_host_version }}" >> ${GITHUB_ENV}
-          echo "SBCL_VERSION=${{ steps.buildenv.outputs.sbcl_version }}" >> ${GITHUB_ENV}
-          echo "LIBFIXPOSIX_VERSION=${{ steps.buildenv.outputs.libfixposix_version }}" >> ${GITHUB_ENV}
-          echo "OPENSSL_VERSION=${{ steps.buildenv.outputs.openssl_version }}" >> ${GITHUB_ENV}
-          echo "REVISION=${{ steps.buildenv.outputs.revision }}" >> ${GITHUB_ENV}
+          echo "SBCL_HOST_VERSION=${{steps.buildenv.outputs.sbcl_host_version}}" >> ${GITHUB_ENV}
+          echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
+          echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
+          echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
+          echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Install build deps
         run: |
-          cat > sources.list << EOF
-          deb-src http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse
-          deb-src http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse
-          deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse
-          EOF
-          sudo mv sources.list /etc/apt/sources.list.d/
-          sudo apt -y update
-          sudo apt -y install libssl-dev=${{ env.OPENSSL_VERSION }}
+          scripts/setup_ubuntu_repos.sh
+          sudo apt-get -y install libssl-dev
       - name: Check deps
         run: scripts/check_deps.sh
