@@ -1,9 +1,18 @@
-name: Release
+name: Build / Release
 
 on:
   push:
-    branches: [ "master" ]
+    branch: [ "master" ]
     paths: [ "build.env" ]
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    paths:
+      - "build.env"
+      - "**.patch"
+      - "**/build.yaml"
+
+env:
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   build:
@@ -106,9 +115,25 @@ jobs:
           echo "###################################################"
           echo "SRCDIST=${SRCDIST}-source.tar.bz2" >> ${GITHUB_ENV}
           echo "BINDIST=${BINDIST}-binary.tar.bz2" >> ${GITHUB_ENV}
+      - name: 'Upload Artifacts'
+        uses: actions/upload-artifact@v3
+        with:
+          name: tarballs
+          path: |
+            ${{ env.SRCDIST }}
+            ${{ env.BINDIST }}
+          retention-days: 5
+
+  release:
+    runs-on: ubuntu-20.04
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: tarballs
       - name: Upload release
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           git config --global --add safe.directory "${GITHUB_WORKSPACE}"
           git config user.name "Stelian Ionescu"
