@@ -4,7 +4,7 @@ source $(dirname ${0})/lib.sh
 
 SBCL_HOST=${1}
 SBCL_VERSION=${2}
-REVISION=${3/ /}
+REVISION=${3}
 export CUSTOM_LIBDIR=${4}
 if [[ ! -d "${CUSTOM_LIBDIR}" ]]; then
     die "Directory does not exist: CUSTOM_LIBDIR=${CUSTOM_LIBDIR}"

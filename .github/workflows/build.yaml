@@ -64,8 +64,7 @@ jobs:
       - name: Patch SBCL
         run: cd sbcl && patch -p1 -i ../sbcl-customizations.patch
       - name: Build SBCL
-        run: scripts/build_sbcl.sh \
-                "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
+        run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
       - name: 'Upload Artifacts'
         uses: actions/upload-artifact@v3
         with:
@@ -101,6 +100,4 @@ jobs:
         with:
           name: tarballs
       - name: Upload release
-        run: scripts/upload_release.sh \
-                "${{env.SBCL_VERSION}}" "${{env.LIBFIXPOSIX_VERSION}}" \
-                "${{env.OPENSSL_VERSION}}" "${{env.REVISION}}"
+        run: scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.REVISION}}"
