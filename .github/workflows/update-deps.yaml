@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  GH_TOKEN: ${{ github.token }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
   check_deps:
