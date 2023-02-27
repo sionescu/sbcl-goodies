@@ -67,7 +67,7 @@ if [[ ${new_sbcl} || ${new_deps} ]]; then
        --base master \
        --head "${new_branch}" \
        --title "${MSG}" \
-       --body "Automatically created by Gihub action"
+       --body "Automatically created by Github action"
 else
     echo "No new deps detected."
 fi
