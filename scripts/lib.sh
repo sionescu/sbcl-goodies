@@ -2,6 +2,8 @@
 
 if [[ -n ${RUNNER_DEBUG} ]]; then
     set -x
+    echo "======== Environment ==========="
+    env
 fi
 
 set -Eeuo pipefail
