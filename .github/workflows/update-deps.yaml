@@ -26,15 +26,9 @@ jobs:
         uses: falti/dotenv-action@v1
         with:
           path: build.env
+          export-variables: true
+          keys-case: upper
           log-variables: true
-          mask-variables: false
-      - name: Export build.env
-        run: |
-          echo "SBCL_HOST_VERSION=${{steps.buildenv.outputs.sbcl_host_version}}" >> ${GITHUB_ENV}
-          echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
-          echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
-          echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
-          echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Install build deps
         run: |
           scripts/setup_ubuntu_repos.sh
