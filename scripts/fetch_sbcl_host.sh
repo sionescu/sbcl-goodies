@@ -10,7 +10,7 @@ fi
 SRCDIR=sbcl-${SBCL_HOST_VERSION}-x86-64-linux
 TARBALL=${SRCDIR}-binary.tar.bz2
 
-wget https://pilotfiber.dl.sourceforge.net/project/sbcl/sbcl/${SBCL_HOST_VERSION}/${TARBALL}
+wget https://prdownloads.sourceforge.net/sbcl/${SBCL_HOST_VERSION}/${TARBALL}
 tar x -f ${TARBALL}
 
 ln -sfv ${SRCDIR} sbcl-host
