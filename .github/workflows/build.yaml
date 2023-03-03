@@ -9,6 +9,11 @@ on:
     paths:
       - "build.env"
       - "**.patch"
+      - "scripts/lib.sh"
+      - "scripts/build*.sh"
+      - "scripts/fetch_sbcl_host.sh"
+      - "scripts/upload_release.sh"
+      - "scripts/setup_ubuntu_repos.sh"
       - "**/build.yaml"
   workflow_dispatch:
 
