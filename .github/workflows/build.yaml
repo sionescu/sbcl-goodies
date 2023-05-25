@@ -13,9 +13,12 @@ on:
       - "scripts/build*.sh"
       - "scripts/fetch_sbcl_host.sh"
       - "scripts/upload_release.sh"
-      - "scripts/setup_ubuntu_repos.sh"
       - "**/build.yaml"
   workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   GH_TOKEN: ${{ github.token }}
@@ -36,7 +39,8 @@ jobs:
           log-variables: true
       - name: Install build deps
         run: |
-          scripts/setup_ubuntu_repos.sh
+          sudo apt-get -y update
+          sudo apt-get -y upgrade
           sudo apt-get -y install build-essential emacs-bin-common check
           sudo apt-get -y install libzstd-dev libssl-dev=${{env.OPENSSL_VERSION}}
       - name: Checkout libfixposix
