@@ -8,7 +8,6 @@ on:
     paths:
       - "scripts/lib.sh"
       - "scripts/check_deps.sh"
-      - "scripts/setup_ubuntu_repos.sh"
       - "**/update-deps.yaml"
   workflow_dispatch:
 
@@ -31,7 +30,8 @@ jobs:
           log-variables: true
       - name: Install build deps
         run: |
-          scripts/setup_ubuntu_repos.sh
+          sudo apt-get -y update
+          sudo apt-get -y upgrade
           sudo apt-get -y install libssl-dev
       - name: Check deps
         run: scripts/check_deps.sh
