@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout build scripts
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Read build.env
         id: buildenv
         uses: falti/dotenv-action@v1
@@ -44,7 +44,7 @@ jobs:
           sudo apt-get -y install build-essential emacs-bin-common check
           sudo apt-get -y install libzstd-dev libssl-dev=${{env.OPENSSL_VERSION}}
       - name: Checkout libfixposix
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: sionescu/libfixposix
           ref: "v${{env.LIBFIXPOSIX_VERSION}} "
@@ -59,7 +59,7 @@ jobs:
       - name: Fetch SBCL host
         run: scripts/fetch_sbcl_host.sh "${{env.SBCL_HOST_VERSION}}"
       - name: Checkout SBCL
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: sbcl/sbcl
           ref: "sbcl-${{env.SBCL_VERSION}}"
@@ -83,7 +83,7 @@ jobs:
     if: github.ref_name == 'master'
     steps:
       - name: Checkout build scripts
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Read build.env
         id: buildenv
         uses: falti/dotenv-action@v1
