@@ -69,7 +69,7 @@ jobs:
       - name: Build SBCL
         run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
       - name: 'Upload Artifacts'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tarballs
           path: |
@@ -99,7 +99,7 @@ jobs:
           echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
           echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tarballs
       - name: Upload release
