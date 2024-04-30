@@ -16,7 +16,7 @@ env:
 
 jobs:
   check_deps:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout build scripts
         uses: actions/checkout@v4
