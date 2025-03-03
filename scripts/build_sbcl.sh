@@ -22,6 +22,7 @@ env SBCL_MAKE_PARALLEL=1 \
     ./make.sh --xc-host="${SBCL_HOST}/run-sbcl.sh --noinform --no-userinit" \
     --with-sb-core-compression \
     --with-sb-linkable-runtime \
+    --without-gencgc --with-mark-region-gc \
     --without-sb-eval \
     --with-sb-fasteval
 
