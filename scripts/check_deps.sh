@@ -36,6 +36,13 @@ if [[ ${LATEST_OPENSSL} != ${OPENSSL_VERSION} ]]; then
     sed -i "/OPENSSL_VERSION=/c\\OPENSSL_VERSION=${LATEST_OPENSSL}" build.env
 fi
 
+LATEST_LIBTLS=$(dpkg-query --show --showformat='${Version}' libtls-dev)
+if [[ ${LATEST_LIBTLS} != ${LIBTLS_VERSION} ]]; then
+    new_deps=true
+    new_dep "LibTLS" "${LATEST_LIBTLS}"
+    sed -i "/LIBTLS_VERSION=/c\\LIBTLS_VERSION=${LATEST_LIBTLS}" build.env
+fi
+
 if [[ ${new_deps} ]]; then
     if [[ ${REVISION} == 99 ]]; then
         die "Already at revision 99. Something's wrong."

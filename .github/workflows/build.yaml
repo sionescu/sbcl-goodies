@@ -42,7 +42,7 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y upgrade
           sudo apt-get -y install build-essential emacs-bin-common check
-          sudo apt-get -y install libzstd-dev libssl-dev=${{env.OPENSSL_VERSION}}
+          sudo apt-get -y install libzstd-dev libssl-dev=${{env.OPENSSL_VERSION}} libtls-dev=${{env.LIBTLS_VERSION}}
       - name: Checkout libfixposix
         uses: actions/checkout@v4
         with:
@@ -97,10 +97,11 @@ jobs:
           echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
           echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
           echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
           echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: tarballs
       - name: Upload release
-        run: scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.REVISION}}"
+        run: scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.REVISION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.LIBTLS_VERSION}}"

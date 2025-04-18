@@ -32,6 +32,6 @@ jobs:
         run: |
           sudo apt-get -y update
           sudo apt-get -y upgrade
-          sudo apt-get -y install libssl-dev
+          sudo apt-get -y install libssl-dev libtls-dev
       - name: Check deps
         run: scripts/check_deps.sh
