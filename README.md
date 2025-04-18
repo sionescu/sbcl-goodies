@@ -22,10 +22,11 @@ core.
 
 Ubuntu 20.04 LTS.
 
-### OpenSSL
+### OpenSSL and LibTLS
 
 The binaries are linked to the official OpenSSL from the Ubuntu
-repositories (with security updates).
+repositories (with security updates), as well as the Linux port of
+OpenBSD's libtls.
 
 ### LibFixPOSIX
 
