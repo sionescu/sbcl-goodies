@@ -1,6 +1,6 @@
 diff -Naur sbcl.old/binary-distribution.sh sbcl.new/binary-distribution.sh
 --- sbcl.old/binary-distribution.sh	2025-03-30 07:49:08.000000000 -0600
-+++ sbcl.new/binary-distribution.sh	2025-04-18 11:03:21.166074015 -0600
++++ sbcl.new/binary-distribution.sh	2025-04-19 16:48:20.187065214 -0600
 @@ -16,7 +16,7 @@
  
  tar -cf $b-binary.tar \
@@ -12,7 +12,7 @@ diff -Naur sbcl.old/binary-distribution.sh sbcl.new/binary-distribution.sh
      $b/install.sh $b/find-gnumake.sh $b/sbcl-pwd.sh $b/run-sbcl.sh \
 diff -Naur sbcl.old/make-target-2-load.lisp sbcl.new/make-target-2-load.lisp
 --- sbcl.old/make-target-2-load.lisp	2025-03-30 07:49:08.000000000 -0600
-+++ sbcl.new/make-target-2-load.lisp	2025-04-18 11:03:21.166417839 -0600
++++ sbcl.new/make-target-2-load.lisp	2025-04-19 16:48:20.200862758 -0600
 @@ -66,7 +66,9 @@
          (cons
           sb-impl::!sbcl-architecture
@@ -26,7 +26,7 @@ diff -Naur sbcl.old/make-target-2-load.lisp sbcl.new/make-target-2-load.lisp
             :BSD :UNIX :LINUX :WIN32 :DARWIN :SUNOS :ANDROID ; OS: pick one or more
 diff -Naur sbcl.old/make-target-2-load.lisp.orig sbcl.new/make-target-2-load.lisp.orig
 --- sbcl.old/make-target-2-load.lisp.orig	1969-12-31 17:00:00.000000000 -0700
-+++ sbcl.new/make-target-2-load.lisp.orig	2025-03-30 07:49:08.000000000 -0600
++++ sbcl.new/make-target-2-load.lisp.orig	2025-04-19 16:48:20.203040897 -0600
 @@ -0,0 +1,559 @@
 +;;; Do warm init without compiling files.
 +
@@ -589,7 +589,7 @@ diff -Naur sbcl.old/make-target-2-load.lisp.orig sbcl.new/make-target-2-load.lis
 +(setf (readtable-base-char-preference *readtable*) :symbols)
 diff -Naur sbcl.old/src/cold/base-target-features.lisp-expr sbcl.new/src/cold/base-target-features.lisp-expr
 --- sbcl.old/src/cold/base-target-features.lisp-expr	2025-03-30 07:49:08.000000000 -0600
-+++ sbcl.new/src/cold/base-target-features.lisp-expr	2025-04-18 11:03:21.166813940 -0600
++++ sbcl.new/src/cold/base-target-features.lisp-expr	2025-04-19 16:48:20.203663088 -0600
 @@ -42,6 +42,9 @@
   ;; features present in all builds
   ;;
@@ -602,8 +602,8 @@ diff -Naur sbcl.old/src/cold/base-target-features.lisp-expr sbcl.new/src/cold/ba
   ;; FIXME: Isn't there a :x3jsomething feature which we should set too?
 diff -Naur sbcl.old/src/runtime/binaries.mk sbcl.new/src/runtime/binaries.mk
 --- sbcl.old/src/runtime/binaries.mk	1969-12-31 17:00:00.000000000 -0700
-+++ sbcl.new/src/runtime/binaries.mk	2025-04-18 11:04:12.571478869 -0600
-@@ -0,0 +1,23 @@
++++ sbcl.new/src/runtime/binaries.mk	2025-04-19 16:48:51.308941182 -0600
+@@ -0,0 +1,24 @@
 +include sbcl.mk
 +
 +all: targets
@@ -614,7 +614,8 @@ diff -Naur sbcl.old/src/runtime/binaries.mk sbcl.new/src/runtime/binaries.mk
 +LIBCRYPTO=${SYS_LIBDIR}/libcrypto.a
 +LIBSSL=${SYS_LIBDIR}/libssl.a
 +LIBTLS=${SYS_LIBDIR}/libtls.a
-+STATIC_ARCHIVES=$(LIBFIXPOSIX) $(LIBCRYPTO) $(LIBSSL) $(LIBTLS)
++LIBCURL=${SYS_LIBDIR}/libcurl.a
++STATIC_ARCHIVES=$(LIBFIXPOSIX) $(LIBCRYPTO) $(LIBSSL) $(LIBTLS) $(LIBCURL)
 +SLIBS=-Wl,--whole-archive $(STATIC_ARCHIVES) -Wl,--no-whole-archive
 +
 +sbcl: $(LIBSBCL)

@@ -43,6 +43,13 @@ if [[ ${LATEST_LIBTLS} != ${LIBTLS_VERSION} ]]; then
     sed -i "/LIBTLS_VERSION=/c\\LIBTLS_VERSION=${LATEST_LIBTLS}" build.env
 fi
 
+LATEST_CURL=$(dpkg-query --show --showformat='${Version}' libcurl4-openssl-dev)
+if [[ ${LATEST_CURL} != ${CURL_VERSION} ]]; then
+    new_deps=true
+    new_dep "Curl" "${LATEST_CURL}"
+    sed -i "/CURL_VERSION=/c\\CURL_VERSION=${LATEST_CURL}" build.env
+fi
+
 if [[ ${new_deps} ]]; then
     if [[ ${REVISION} == 99 ]]; then
         die "Already at revision 99. Something's wrong."

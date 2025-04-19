@@ -7,6 +7,7 @@ REVISION=${2}
 LIBFIXPOSIX_VERSION=${3}
 OPENSSL_VERSION=${4}
 LIBTLS_VERSION=${5}
+CURL_VERSION=${6}
 
 git config --global --add safe.directory "${GITHUB_WORKSPACE}"
 git config user.name "Stelian Ionescu"
@@ -23,6 +24,7 @@ cat > notes.md << EOF
  - libfixposix ${LIBFIXPOSIX_VERSION}
  - OpenSSL ${OPENSSL_VERSION}
  - LibTLS ${LIBTLS_VERSION}
+ - Curl ${CURL_VERSION}
 EOF
 gh release create \
    ${TAG} \
