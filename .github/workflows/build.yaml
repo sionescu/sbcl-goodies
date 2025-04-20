@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: sionescu/libfixposix
-          ref: "v${{env.LIBFIXPOSIX_VERSION}} "
+          ref: "v${{env.LIBFIXPOSIX_VERSION}}"
           path: libfixposix
       - name: Setup build environment
         run: |
@@ -99,7 +99,7 @@ jobs:
           echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
           echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
           echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
-          echo "LIBTLS_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=${{steps.buildenv.outputs.libtls_version}}" >> ${GITHUB_ENV}
           echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Download artifacts
         uses: actions/download-artifact@v4
