@@ -2,7 +2,7 @@ name: Build / Release
 
 on:
   push:
-    branch: [ "master" ]
+    branches: [ "master" ]
     paths: [ "build.env" ]
   pull_request:
     types: [ opened, reopened, synchronize ]
