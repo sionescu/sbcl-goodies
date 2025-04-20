@@ -39,6 +39,8 @@ jobs:
           log-variables: true
       - name: Install build deps
         run: |
+          echo ">>>> Removing useless packages"
+          sudo apt-get -y remove --autoremove --purge apache2 'aspnetcore*' '*mono*' firebird3.0-common firefox google-chrome-stable java-common '*jdk*' mssql-tools 'mysql*' 'nginx*' 'php*' 'postgres*' powershell r-base 'mecab*'
           sudo apt-get -y update
           sudo apt-get -y upgrade
           sudo apt-get -y install build-essential emacs-bin-common check
