@@ -9,8 +9,8 @@ core.
 
 ## Modifications
 
- - `src/runtime/sbcl` is statically linked to `libcrypto`, `libssl` and
-   `libfixposix`
+ - `src/runtime/sbcl` is statically linked to `libcrypto`, `libssl`,
+   `libtls` and `libfixposix`
  - in the SBCL core, a new keyword was added to `*features*`:
    `:CL+SSL-FOREIGN-LIBS-ALREADY-LOADED`
  - `CL:LISP-IMPLEMENTATION-VERSION` returns a string containing the
