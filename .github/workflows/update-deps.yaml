@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout build scripts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Read build.env
         id: buildenv
         uses: falti/dotenv-action@v1
