@@ -97,7 +97,7 @@ jobs:
         run: |
           echo "SBCL_HOST_VERSION=${{steps.buildenv.outputs.sbcl_host_version}}" >> ${GITHUB_ENV}
           echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
-          echo ASDF_VERSION=${{steps.buildenv.outputs.asdf_version}}" >> ${GITHUB_ENV}
+          echo "ASDF_VERSION=${{steps.buildenv.outputs.asdf_version}}" >> ${GITHUB_ENV}
           echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
           echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
           echo "LIBTLS_VERSION=${{steps.buildenv.outputs.libtls_version}}" >> ${GITHUB_ENV}
