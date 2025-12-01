@@ -4,8 +4,9 @@ source $(dirname ${0})/lib.sh
 
 SBCL_HOST=${1}
 SBCL_VERSION=${2}
-REVISION=${3}
-export CUSTOM_LIBDIR=${4}
+ASDF_VERSION=${3}
+REVISION=${4}
+export CUSTOM_LIBDIR=${5}
 if [[ ! -d "${CUSTOM_LIBDIR}" ]]; then
     die "Directory does not exist: CUSTOM_LIBDIR=${CUSTOM_LIBDIR}"
 fi
@@ -16,6 +17,11 @@ cd sbcl
 rm -rf .git
 # Override SBCL lisp-implementation-version
 echo "\"${SBCL_VERSION}+r${REVISION}\"" > version.lisp-expr
+
+# Update ASDF
+pushd contrib/asdf
+./pull-asdf.sh "${ASDF_VERSION}"
+popd
 
 env SBCL_MAKE_PARALLEL=1 \
     SBCL_MAKE_JOBS=-j4 \

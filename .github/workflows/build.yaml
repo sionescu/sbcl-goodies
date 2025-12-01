@@ -45,17 +45,17 @@ jobs:
           sudo apt-get -y upgrade
           sudo apt-get -y install build-essential emacs-bin-common check
           sudo apt-get -y install libzstd-dev libssl-dev=${{env.OPENSSL_VERSION}} libtls-dev=${{env.LIBTLS_VERSION}}
+      - name: Setup build environment
+        run: |
+          CUSTOM_LIBDIR="${GITHUB_WORKSPACE}/static_libs"
+          mkdir -vp "${CUSTOM_LIBDIR}"
+          echo "CUSTOM_LIBDIR=${CUSTOM_LIBDIR}" >> "${GITHUB_ENV}"
       - name: Checkout libfixposix
         uses: actions/checkout@v5
         with:
           repository: sionescu/libfixposix
           ref: "v${{env.LIBFIXPOSIX_VERSION}}"
           path: libfixposix
-      - name: Setup build environment
-        run: |
-          CUSTOM_LIBDIR="${GITHUB_WORKSPACE}/static_libs"
-          mkdir -vp "${CUSTOM_LIBDIR}"
-          echo "CUSTOM_LIBDIR=${CUSTOM_LIBDIR}" >> "${GITHUB_ENV}"
       - name: Build libfixposix
         run: scripts/build_libfixposix.sh "${{env.CUSTOM_LIBDIR}}"
       - name: Fetch SBCL host
@@ -69,7 +69,7 @@ jobs:
       - name: Patch SBCL
         run: cd sbcl && patch -p1 -i ../sbcl-customizations.patch
       - name: Build SBCL
-        run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
+        run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
       - name: 'Upload Artifacts'
         uses: actions/upload-artifact@v5
         with:
@@ -97,6 +97,7 @@ jobs:
         run: |
           echo "SBCL_HOST_VERSION=${{steps.buildenv.outputs.sbcl_host_version}}" >> ${GITHUB_ENV}
           echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
+          echo ASDF_VERSION=${{steps.buildenv.outputs.asdf_version}}" >> ${GITHUB_ENV}
           echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
           echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
           echo "LIBTLS_VERSION=${{steps.buildenv.outputs.libtls_version}}" >> ${GITHUB_ENV}
@@ -106,4 +107,4 @@ jobs:
         with:
           name: tarballs
       - name: Upload release
-        run: scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.REVISION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.LIBTLS_VERSION}}"
+        run: scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.LIBTLS_VERSION}}"
