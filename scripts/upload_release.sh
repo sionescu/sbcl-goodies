@@ -3,10 +3,11 @@
 source $(dirname ${0})/lib.sh
 
 SBCL_VERSION=${1}
-REVISION=${2}
-LIBFIXPOSIX_VERSION=${3}
-OPENSSL_VERSION=${4}
-LIBTLS_VERSION=${5}
+ASDF_VERSION=${2}
+REVISION=${3}
+LIBFIXPOSIX_VERSION=${4}
+OPENSSL_VERSION=${5}
+LIBTLS_VERSION=${6}
 
 git config --global --add safe.directory "${GITHUB_WORKSPACE}"
 git config user.name "Stelian Ionescu"
@@ -20,6 +21,7 @@ git push --tags
 cat > notes.md << EOF
 # Components:
  - SBCL ${SBCL_VERSION}
+ - ASDF ${ASDF_VERSION}
  - libfixposix ${LIBFIXPOSIX_VERSION}
  - OpenSSL ${OPENSSL_VERSION}
  - LibTLS ${LIBTLS_VERSION}
