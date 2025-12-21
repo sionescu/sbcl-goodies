@@ -25,10 +25,10 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout build scripts
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Read build.env
         id: buildenv
         uses: falti/dotenv-action@v1
@@ -71,7 +71,7 @@ jobs:
       - name: Build SBCL
         run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
       - name: 'Upload Artifacts'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: tarballs
           path: |
@@ -80,12 +80,12 @@ jobs:
           retention-days: 5
 
   release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     if: github.ref_name == 'master'
     steps:
       - name: Checkout build scripts
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Read build.env
         id: buildenv
         uses: falti/dotenv-action@v1
@@ -103,7 +103,7 @@ jobs:
           echo "LIBTLS_VERSION=${{steps.buildenv.outputs.libtls_version}}" >> ${GITHUB_ENV}
           echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: tarballs
       - name: Upload release
