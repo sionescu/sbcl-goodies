@@ -1,4 +1,4 @@
-name: Check for newer dependencies
+name: "Check for newer dependencies"
 
 on:
   schedule:
@@ -16,10 +16,15 @@ env:
 
 jobs:
   check_deps:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
+      - OS setup
+        run: |
+          sudo apt-get -y remove --autoremove --purge apache2 firefox powershell ubuntu-pro-client
+          sudo apt-get -y update
+          sudo apt-get -y upgrade
       - name: Checkout build scripts
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Read build.env
         id: buildenv
         uses: falti/dotenv-action@v1
@@ -30,8 +35,6 @@ jobs:
           log-variables: true
       - name: Install build deps
         run: |
-          sudo apt-get -y update
-          sudo apt-get -y upgrade
           sudo apt-get -y install libssl-dev libtls-dev
       - name: Check deps
-        run: scripts/check_deps.sh
+        run: scripts/check_deps.sh build.env
