@@ -9,6 +9,8 @@ function new_dep() {
     notes+=("${dep} ${ver}")
 }
 
+BUILD_ENV=${1}
+
 new_sbcl=
 new_deps=
 declare -a notes
@@ -18,7 +20,7 @@ LATEST_SBCL=$(gh release list -R sbcl/sbcl -L 1 \
 if [[ ${LATEST_SBCL} != ${SBCL_VERSION} ]]; then
     new_sbcl=true
     new_dep "SBCL" "${LATEST_SBCL}"
-    sed -i "/SBCL_VERSION=/c\\SBCL_VERSION=${LATEST_SBCL}" build.env
+    sed -i "/SBCL_VERSION=/c\\SBCL_VERSION=${LATEST_SBCL}" ${BUILD_ENV}
 fi
 
 LATEST_LIBFIXPOSIX=$(gh release list -R sionescu/libfixposix -L 1 \
@@ -26,21 +28,21 @@ LATEST_LIBFIXPOSIX=$(gh release list -R sionescu/libfixposix -L 1 \
 if [[ ${LATEST_LIBFIXPOSIX} != ${LIBFIXPOSIX_VERSION} ]]; then
     new_deps=true
     new_dep "libfixposix" "${LATEST_LIBFIXPOSIX}"
-    sed -i "/LIBFIXPOSIX_VERSION=/c\\LIBFIXPOSIX_VERSION=${LATEST_LIBFIXPOSIX}" build.env
+    sed -i "/LIBFIXPOSIX_VERSION=/c\\LIBFIXPOSIX_VERSION=${LATEST_LIBFIXPOSIX}" ${BUILD_ENV}
 fi
 
 LATEST_OPENSSL=$(dpkg-query --show --showformat='${Version}' libssl-dev)
 if [[ ${LATEST_OPENSSL} != ${OPENSSL_VERSION} ]]; then
     new_deps=true
     new_dep "OpenSSL" "${LATEST_OPENSSL}"
-    sed -i "/OPENSSL_VERSION=/c\\OPENSSL_VERSION=${LATEST_OPENSSL}" build.env
+    sed -i "/OPENSSL_VERSION=/c\\OPENSSL_VERSION=${LATEST_OPENSSL}" ${BUILD_ENV}
 fi
 
 LATEST_LIBTLS=$(dpkg-query --show --showformat='${Version}' libtls-dev)
 if [[ ${LATEST_LIBTLS} != ${LIBTLS_VERSION} ]]; then
     new_deps=true
     new_dep "LibTLS" "${LATEST_LIBTLS}"
-    sed -i "/LIBTLS_VERSION=/c\\LIBTLS_VERSION=${LATEST_LIBTLS}" build.env
+    sed -i "/LIBTLS_VERSION=/c\\LIBTLS_VERSION=${LATEST_LIBTLS}" ${BUILD_ENV}
 fi
 
 if [[ ${new_deps} ]]; then
@@ -63,8 +65,8 @@ if [[ ${new_sbcl} || ${new_deps} ]]; then
     new_branch=new_deps_$(date -u +%Y%m%dT%H%M)
     git checkout -b "${new_branch}"
 
-    sed -i "/REVISION=/c\\REVISION=${REVISION}" build.env
-    git add build.env
+    sed -i "/REVISION=/c\\REVISION=${REVISION}" ${BUILD_ENV}
+    git add ${BUILD_ENV}
 
     MSG=$(join ", " "${notes[@]}")
     git commit -a -m "${MSG}"
