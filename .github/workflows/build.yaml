@@ -1,7 +1,7 @@
 name: "Build / Release"
 permissions:
   contents: read
-  artifact-metadata: write
+  artifact-metadata: read
 
 on:
   push:
@@ -29,6 +29,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    permissions:
+      artifact-metadata: write
     steps:
       - name: OS setup
         run: |
@@ -87,6 +89,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     if: github.ref_name == 'master'
+    permissions:
+      contents: write
     steps:
       - name: Checkout build scripts
         uses: actions/checkout@v6
