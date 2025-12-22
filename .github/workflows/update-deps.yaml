@@ -18,7 +18,7 @@ jobs:
   check_deps:
     runs-on: ubuntu-24.04
     steps:
-      - OS setup
+      - name: OS setup
         run: |
           sudo apt-get -y remove --autoremove --purge apache2 firefox powershell ubuntu-pro-client
           sudo apt-get -y update
