@@ -1,4 +1,6 @@
 name: "Check for newer dependencies"
+permissions:
+  contents: read
 
 on:
   schedule:
@@ -17,6 +19,8 @@ env:
 jobs:
   check_deps:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     steps:
       - name: OS setup
         run: |
