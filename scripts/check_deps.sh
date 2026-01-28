@@ -16,7 +16,7 @@ new_deps=
 declare -a notes
 
 LATEST_SBCL=$(gh release list -R sbcl/sbcl -L 1 \
-                  | perl -n -e'/Latest\W+sbcl-([.0-9]+)/ && print $1')
+                  | perl -n -e'/\W+sbcl-([.0-9]+)/ && print $1')
 if [[ ${LATEST_SBCL} != ${SBCL_VERSION} ]]; then
     new_sbcl=true
     new_dep "SBCL" "${LATEST_SBCL}"
