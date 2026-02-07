@@ -603,18 +603,13 @@ diff -Naur sbcl.old/src/cold/base-target-features.lisp-expr sbcl.new/src/cold/ba
 diff -Naur sbcl.old/src/runtime/binaries.mk sbcl.new/src/runtime/binaries.mk
 --- sbcl.old/src/runtime/binaries.mk	1969-12-31 17:00:00.000000000 -0700
 +++ sbcl.new/src/runtime/binaries.mk	2025-04-18 11:04:12.571478869 -0600
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,18 @@
 +include sbcl.mk
 +
 +all: targets
 +BINARIES=sbcl sbcl.extras
 +targets: $(BINARIES)
 +
-+LIBFIXPOSIX=${CUSTOM_LIBDIR}/libfixposix.a
-+LIBCRYPTO=${SYS_LIBDIR}/libcrypto.a
-+LIBSSL=${SYS_LIBDIR}/libssl.a
-+LIBTLS=${SYS_LIBDIR}/libtls.a
-+STATIC_ARCHIVES=$(LIBFIXPOSIX) $(LIBCRYPTO) $(LIBSSL) $(LIBTLS)
 +SLIBS=-Wl,--whole-archive $(STATIC_ARCHIVES) -Wl,--no-whole-archive
 +
 +sbcl: $(LIBSBCL)
