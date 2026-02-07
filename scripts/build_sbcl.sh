@@ -34,6 +34,14 @@ env SBCL_MAKE_PARALLEL=1 \
 
 # Link runtime with goodies and overwrite the original
 export SYS_LIBDIR="/usr/lib/x86_64-linux-gnu"
+
+LIBFIXPOSIX=${CUSTOM_LIBDIR}/libfixposix.a
+LIBCRYPTO=${SYS_LIBDIR}/libcrypto.a
+LIBSSL=${SYS_LIBDIR}/libssl.a
+LIBTLS=${SYS_LIBDIR}/libtls.a
+
+export STATIC_ARCHIVES="$LIBFIXPOSIX $LIBCRYPTO $LIBSSL $LIBTLS"
+
 make -C src/runtime -f binaries.mk sbcl.extras
 mv -vf src/runtime/sbcl.extras src/runtime/sbcl
 
