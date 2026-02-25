@@ -20,7 +20,7 @@ core.
 
 ## Build environment
 
-Ubuntu 22.04 LTS.
+Ubuntu 24.04 LTS.
 
 ### OpenSSL and LibTLS
 
