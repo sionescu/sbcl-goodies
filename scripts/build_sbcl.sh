@@ -13,6 +13,16 @@ fi
 
 cd sbcl
 
+export SYS_LIBDIR="/usr/lib/x86_64-linux-gnu"
+
+export LIBZSTD="$SYS_LIBDIR/libzstd.a"
+# Replace all instances of -lzstd in sbcl source with $LIBZSTD
+find ./ -type f -exec sed -i -e "s|-lzstd|$LIBZSTD|g" {} \;
+
+# Download zstd license; may be we should fetch from the system files? But which file?
+mkdir zstd-bsd
+curl -o zstd-bsd/LICENSE "https://raw.githubusercontent.com/facebook/zstd/refs/heads/dev/LICENSE"
+
 # Prevent SBCL build from generating a version string from git
 rm -rf .git
 # Override SBCL lisp-implementation-version
@@ -33,8 +43,6 @@ env SBCL_MAKE_PARALLEL=1 \
     --with-sb-fasteval
 
 # Link runtime with goodies and overwrite the original
-export SYS_LIBDIR="/usr/lib/x86_64-linux-gnu"
-
 LIBFIXPOSIX=${CUSTOM_LIBDIR}/libfixposix.a
 LIBCRYPTO=${SYS_LIBDIR}/libcrypto.a
 LIBSSL=${SYS_LIBDIR}/libssl.a

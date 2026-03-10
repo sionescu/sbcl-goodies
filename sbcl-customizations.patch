@@ -1,12 +1,13 @@
 diff -Naur sbcl.old/binary-distribution.sh sbcl.new/binary-distribution.sh
 --- sbcl.old/binary-distribution.sh	2025-03-30 07:49:08.000000000 -0600
 +++ sbcl.new/binary-distribution.sh	2025-04-18 11:03:21.166074015 -0600
-@@ -16,7 +16,7 @@
+@@ -16,7 +16,8 @@
  
  tar -cf $b-binary.tar \
      $b/output/sbcl.core $b/src/runtime/sbcl $b/output/prefix.def \
 -    $b/src/runtime/sbcl.mk \
 +    $b/src/runtime/sbcl.mk $b/src/runtime/binaries.mk $b/third_party/include \
++    $b/zstd-bsd/LICENSE \
      `grep '^LIBSBCL=' $b/src/runtime/sbcl.mk | cut -d= -f2- | while read lib; do echo $b/src/runtime/$lib; done` \
      $b/BUGS $b/COPYING $b/CREDITS $b/INSTALL $b/NEWS $b/README \
      $b/install.sh $b/find-gnumake.sh $b/sbcl-pwd.sh $b/run-sbcl.sh \
