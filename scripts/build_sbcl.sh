@@ -23,6 +23,13 @@ pushd contrib/asdf
 ./pull-asdf.sh "${ASDF_VERSION}"
 popd
 
+# Link runtime with goodies and overwrite the original
+export SYS_LIBDIR="/usr/lib/x86_64-linux-gnu"
+
+LIBZSTD=${SYS_LIBDIR}/libzstd.a
+sed -i "s:-libzstd:$LIBZSTD:" src/runtime/Config.*
+cp ../scripts/COPYING.zstd ./
+
 env SBCL_MAKE_PARALLEL=1 \
     SBCL_MAKE_JOBS=-j4 \
     ./make.sh --xc-host="${SBCL_HOST}/run-sbcl.sh --noinform --no-userinit" \
@@ -32,15 +39,12 @@ env SBCL_MAKE_PARALLEL=1 \
     --without-sb-eval \
     --with-sb-fasteval
 
-# Link runtime with goodies and overwrite the original
-export SYS_LIBDIR="/usr/lib/x86_64-linux-gnu"
-
 LIBFIXPOSIX=${CUSTOM_LIBDIR}/libfixposix.a
 LIBCRYPTO=${SYS_LIBDIR}/libcrypto.a
 LIBSSL=${SYS_LIBDIR}/libssl.a
 LIBTLS=${SYS_LIBDIR}/libtls.a
 
-export STATIC_ARCHIVES="$LIBFIXPOSIX $LIBCRYPTO $LIBSSL $LIBTLS"
+export WHOLE_ARCHIVES="$LIBFIXPOSIX $LIBCRYPTO $LIBSSL $LIBTLS"
 
 make -C src/runtime -f binaries.mk sbcl.extras
 mv -vf src/runtime/sbcl.extras src/runtime/sbcl
