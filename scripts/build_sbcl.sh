@@ -27,7 +27,8 @@ popd
 export SYS_LIBDIR="/usr/lib/x86_64-linux-gnu"
 
 LIBZSTD=${SYS_LIBDIR}/libzstd.a
-sed -i "s:-libzstd:$LIBZSTD:" src/runtime/Config.*
+# Quick hack, not safe for cross-compiling.
+sed -i "s:-lzstd:$LIBZSTD:" src/runtime/Config.*
 cp ../scripts/COPYING.zstd ./
 
 env SBCL_MAKE_PARALLEL=1 \
