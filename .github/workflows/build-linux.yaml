@@ -1,0 +1,122 @@
+name: "Build / Release (Linux)"
+permissions:
+  contents: read
+  artifact-metadata: read
+
+on:
+  push:
+    branches: [ "master" ]
+    paths: [ "build.env" ]
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    paths:
+      - "build-linux.env"
+      - "**.patch"
+      - "scripts/lib.sh"
+      - "scripts/build*.sh"
+      - "scripts/fetch_sbcl_host.sh"
+      - "scripts/upload_release.sh"
+      - "**/build-linux.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      artifact-metadata: write
+    steps:
+      - name: OS setup
+        run: |
+          sudo apt-get -y remove --autoremove --purge apache2 firefox powershell ubuntu-pro-client
+          sudo apt-get -y update
+          sudo apt-get -y upgrade
+      - name: Checkout build scripts
+        uses: actions/checkout@v6
+      - name: Read build.env
+        id: buildenv
+        uses: falti/dotenv-action@f4656c46de6bc223dda660f6724d52537bc0642a # v1.1.5
+        with:
+          path: build-linux.env
+          export-variables: true
+          keys-case: upper
+          log-variables: true
+      - name: Install build deps
+        run: |
+          sudo apt-get -y install build-essential emacs-bin-common check
+          sudo apt-get -y install libzstd-dev libssl-dev libtls-dev
+      - name: Setup build environment
+        run: |
+          CUSTOM_LIBDIR="${GITHUB_WORKSPACE}/static_libs"
+          mkdir -vp "${CUSTOM_LIBDIR}"
+          echo "CUSTOM_LIBDIR=${CUSTOM_LIBDIR}" >> "${GITHUB_ENV}"
+      - name: Checkout libfixposix
+        uses: actions/checkout@v6
+        with:
+          repository: sionescu/libfixposix
+          ref: "v${{env.LIBFIXPOSIX_VERSION}}"
+          path: libfixposix
+      - name: Build libfixposix
+        run: scripts/build_libfixposix.sh "${{env.CUSTOM_LIBDIR}}"
+      - name: Fetch SBCL host
+        run: scripts/fetch_sbcl_host.sh "${{env.SBCL_HOST_VERSION}}"
+      - name: Checkout SBCL
+        uses: actions/checkout@v6
+        with:
+          repository: sbcl/sbcl
+          ref: "sbcl-${{env.SBCL_VERSION}}"
+          path: sbcl
+      - name: Patch SBCL
+        run: cd sbcl && patch -p1 -i ../sbcl-customizations.patch
+      - name: Push versions of OPENSSL, LIBTLS to GITHUB_ENV
+        run: |
+          echo "OPENSSL_VERSION=$(dpkg-query -W -f='${VERSION}' libssl-dev)" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=$(dpkg-query -W -f='${VERSION}' libtls-dev)" >> ${GITHUB_ENV}
+      - name: Build SBCL
+        run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
+      - name: 'Upload Artifacts'
+        uses: actions/upload-artifact@v6
+        with:
+          name: tarballs
+          path: |
+            ${{env.SRCDIST}}
+            ${{env.BINDIST}}
+          retention-days: 5
+
+  release:
+    runs-on: ubuntu-24.04
+    needs: build
+    if: github.ref_name == 'master'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout build scripts
+        uses: actions/checkout@v6
+      - name: Read build.env
+        id: buildenv
+        uses: falti/dotenv-action@f4656c46de6bc223dda660f6724d52537bc0642a # v1.1.5
+        with:
+          path: build-linux.env
+          log-variables: true
+          mask-variables: false
+      - name: Export build.env
+        run: |
+          echo "SBCL_HOST_VERSION=${{steps.buildenv.outputs.sbcl_host_version}}" >> ${GITHUB_ENV}
+          echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
+          echo "ASDF_VERSION=${{steps.buildenv.outputs.asdf_version}}" >> ${GITHUB_ENV}
+          echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
+          echo "OPENSSL_VERSION=$(dpkg-query -W -f='${VERSION}' libssl-dev)" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=$(dpkg-query -W -f='${VERSION}' libtls-dev)" >> ${GITHUB_ENV}
+          echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
+      - name: Download artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: tarballs
+      - name: Upload release
+        run: scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.LIBTLS_VERSION}}"
