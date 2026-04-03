@@ -15,4 +15,4 @@ tar x -f ${TARBALL}
 
 ln -sfv ${SRCDIR} sbcl-host
 echo "Unpacked SBCL host to ${PWD}/sbcl-host"
-echo SBCL_HOST="${GITHUB_WORKSPACE}/sbcl-host" >> ${GITHUB_ENV}
+echo SBCL_HOST="${GITHUB_WORKSPACE}/sbcl-host/run-sbcl.sh" >> ${GITHUB_ENV}

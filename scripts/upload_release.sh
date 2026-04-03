@@ -15,21 +15,30 @@ git config user.email "sionescu@cddr.org"
 
 RELEASE="${SBCL_VERSION}+r${REVISION}"
 TAG="v${RELEASE}"
-git tag -m "Release ${RELEASE}" ${TAG}
-git push --tags
 
-cat > notes.md << EOF
-# Components:
+TAG_EXISTS=$(git ls-remote --tags origin "refs/tags/$TAG" | wc -l)
+# RELEASE_EXISTS=$({ gh release view "$TAG" &>/dev/null && echo 1 ; } || echo 0)
+
+if [ "$TAG_EXISTS" -eq 0 ]; then
+    git tag -m "Release ${RELEASE}" ${TAG}
+    git push --tags
+
+    gh release create ${TAG} --latest --title "SBCL ${RELEASE}"
+fi
+
+# FIXME: We should read the existing notes, then append to it
+cat >> notes.md << EOF
+# Components (${OS}):
  - SBCL ${SBCL_VERSION}
  - ASDF ${ASDF_VERSION}
  - libfixposix ${LIBFIXPOSIX_VERSION}
  - OpenSSL ${OPENSSL_VERSION}
  - LibTLS ${LIBTLS_VERSION}
 EOF
-gh release create \
-   ${TAG} \
-   --latest \
-   --title "SBCL ${RELEASE}" \
-   --notes-file notes.md \
-   "sbcl-${RELEASE}-source.tar.bz2" \
-   "sbcl-${RELEASE}-x86-64-linux-binary.tar.bz2"
+
+gh release edit ${TAG} --notes-file notes.md
+
+SBCLDIST=sbcl-${RELEASE}-$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')
+SRCDIST="${SBCLDIST}-source.tar.bz2"
+BINDIST="${SBCLDIST}-binary.tar.bz2"
+gh release upload ${TAG} "${SRCDIST}" "${BINDIST}"

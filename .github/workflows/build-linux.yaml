@@ -1,4 +1,4 @@
-name: "Build / Release"
+name: "Build / Release (Linux)"
 permissions:
   contents: read
   artifact-metadata: read
@@ -50,7 +50,7 @@ jobs:
       - name: Install build deps
         run: |
           sudo apt-get -y install build-essential emacs-bin-common check
-          sudo apt-get -y install libzstd-dev libssl-dev=${{env.OPENSSL_VERSION}} libtls-dev=${{env.LIBTLS_VERSION}}
+          sudo apt-get -y install libzstd-dev libssl-dev libtls-dev
       - name: Setup build environment
         run: |
           CUSTOM_LIBDIR="${GITHUB_WORKSPACE}/static_libs"
@@ -74,6 +74,10 @@ jobs:
           path: sbcl
       - name: Patch SBCL
         run: cd sbcl && patch -p1 -i ../sbcl-customizations.patch
+      - name: Push versions of OPENSSL, LIBTLS to GITHUB_ENV
+        run: |
+          echo "OPENSSL_VERSION=$(dpkg-query -W -f='${VERSION}' libssl-dev)" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=$(dpkg-query -W -f='${VERSION}' libtls-dev)" >> ${GITHUB_ENV}
       - name: Build SBCL
         run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
       - name: 'Upload Artifacts'
@@ -107,8 +111,8 @@ jobs:
           echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
           echo "ASDF_VERSION=${{steps.buildenv.outputs.asdf_version}}" >> ${GITHUB_ENV}
           echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
-          echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
-          echo "LIBTLS_VERSION=${{steps.buildenv.outputs.libtls_version}}" >> ${GITHUB_ENV}
+          echo "OPENSSL_VERSION=$(dpkg-query -W -f='${VERSION}' libssl-dev)" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=$(dpkg-query -W -f='${VERSION}' libtls-dev)" >> ${GITHUB_ENV}
           echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Download artifacts
         uses: actions/download-artifact@v6
