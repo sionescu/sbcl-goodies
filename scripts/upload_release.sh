@@ -15,21 +15,28 @@ git config user.email "sionescu@cddr.org"
 
 RELEASE="${SBCL_VERSION}+r${REVISION}"
 TAG="v${RELEASE}"
-git tag -m "Release ${RELEASE}" ${TAG}
-git push --tags
 
-cat > notes.md << EOF
-# Components:
+TAG_EXISTS=$(git ls-remote --tags origin "refs/tags/$TAG" | wc -l)
+# RELEASE_EXISTS=$({ gh release view "$TAG" &>/dev/null && echo 1 ; } || echo 0)
+
+if [ "$TAG_EXISTS" -eq 0 ]; then
+    git tag -m "Release ${RELEASE}" ${TAG}
+    git push --tags
+
+    cat >> notes.md << EOF
+# Components (${OS}):
  - SBCL ${SBCL_VERSION}
  - ASDF ${ASDF_VERSION}
  - libfixposix ${LIBFIXPOSIX_VERSION}
  - OpenSSL ${OPENSSL_VERSION}
  - LibTLS ${LIBTLS_VERSION}
 EOF
-gh release create \
-   ${TAG} \
-   --latest \
-   --title "SBCL ${RELEASE}" \
-   --notes-file notes.md \
-   "sbcl-${RELEASE}-source.tar.bz2" \
-   "sbcl-${RELEASE}-x86-64-linux-binary.tar.bz2"
+    gh release create \
+       ${TAG} \
+       --latest \
+       --title "SBCL ${RELEASE}" \
+       --notes-file notes.md \
+       "sbcl-${RELEASE}-source.tar.bz2"
+fi
+
+gh release upload ${TAG} "sbcl-${RELEASE}-$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-binary.tar.bz2"

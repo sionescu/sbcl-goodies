@@ -1,4 +1,4 @@
-name: "Build / Release"
+name: "Build / Release (Darwin)"
 permissions:
   contents: read
   artifact-metadata: read
@@ -28,15 +28,10 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
     permissions:
       artifact-metadata: write
     steps:
-      - name: OS setup
-        run: |
-          sudo apt-get -y remove --autoremove --purge apache2 firefox powershell ubuntu-pro-client
-          sudo apt-get -y update
-          sudo apt-get -y upgrade
       - name: Checkout build scripts
         uses: actions/checkout@v6
       - name: Read build.env
@@ -49,8 +44,10 @@ jobs:
           log-variables: true
       - name: Install build deps
         run: |
-          sudo apt-get -y install build-essential emacs-bin-common check
-          sudo apt-get -y install libzstd-dev libssl-dev=${{env.OPENSSL_VERSION}} libtls-dev=${{env.LIBTLS_VERSION}}
+          # Homebrew does not seem to support versions in the general case
+          brew install bash zstd openssl libretls
+          # We need all these to build libfixposix
+          brew install autoconf automake libtool check
       - name: Setup build environment
         run: |
           CUSTOM_LIBDIR="${GITHUB_WORKSPACE}/static_libs"
@@ -65,7 +62,9 @@ jobs:
       - name: Build libfixposix
         run: scripts/build_libfixposix.sh "${{env.CUSTOM_LIBDIR}}"
       - name: Fetch SBCL host
-        run: scripts/fetch_sbcl_host.sh "${{env.SBCL_HOST_VERSION}}"
+        run: |
+          brew install sbcl
+          echo SBCL_HOST="$(which sbcl)" >> ${GITHUB_ENV}
       - name: Checkout SBCL
         uses: actions/checkout@v6
         with:
@@ -74,6 +73,11 @@ jobs:
           path: sbcl
       - name: Patch SBCL
         run: cd sbcl && patch -p1 -i ../sbcl-customizations.patch
+      - name: Push versions of SBCL_HOST, OPENSSL, LIBTLS to GITHUB_ENV
+        run: |
+          echo "SBCL_HOST_VERSION=$(brew info --json sbcl | jq -r '.[0].installed[0].version')" >> ${GITHUB_ENV}
+          echo "OPENSSL_VERSION=$(brew info --json openssl | jq -r '.[0].installed[0].version')" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=$(brew info --json libretls | jq -r '.[0].installed[0].version')" >> ${GITHUB_ENV}
       - name: Build SBCL
         run: scripts/build_sbcl.sh "${{env.SBCL_HOST}}" "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.CUSTOM_LIBDIR}}"
       - name: 'Upload Artifacts'
@@ -86,7 +90,7 @@ jobs:
           retention-days: 5
 
   release:
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
     needs: build
     if: github.ref_name == 'master'
     permissions:
@@ -103,16 +107,19 @@ jobs:
           mask-variables: false
       - name: Export build.env
         run: |
-          echo "SBCL_HOST_VERSION=${{steps.buildenv.outputs.sbcl_host_version}}" >> ${GITHUB_ENV}
+          brew install sbcl openssl libretls
+          echo "SBCL_HOST_VERSION=$(brew info --json sbcl | jq -r '.[0].installed[0].version')" >> ${GITHUB_ENV}
           echo "SBCL_VERSION=${{steps.buildenv.outputs.sbcl_version}}" >> ${GITHUB_ENV}
           echo "ASDF_VERSION=${{steps.buildenv.outputs.asdf_version}}" >> ${GITHUB_ENV}
           echo "LIBFIXPOSIX_VERSION=${{steps.buildenv.outputs.libfixposix_version}}" >> ${GITHUB_ENV}
-          echo "OPENSSL_VERSION=${{steps.buildenv.outputs.openssl_version}}" >> ${GITHUB_ENV}
-          echo "LIBTLS_VERSION=${{steps.buildenv.outputs.libtls_version}}" >> ${GITHUB_ENV}
+          echo "OPENSSL_VERSION=$(brew info --json openssl | jq -r '.[0].installed[0].version')" >> ${GITHUB_ENV}
+          echo "LIBTLS_VERSION=$(brew info --json libretls | jq -r '.[0].installed[0].version')" >> ${GITHUB_ENV}
           echo "REVISION=${{steps.buildenv.outputs.revision}}" >> ${GITHUB_ENV}
       - name: Download artifacts
         uses: actions/download-artifact@v6
         with:
           name: tarballs
       - name: Upload release
-        run: scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.LIBTLS_VERSION}}"
+        run: |
+          brew install gh
+          scripts/upload_release.sh "${{env.SBCL_VERSION}}" "${{env.ASDF_VERSION}}" "${{env.REVISION}}" "${{env.LIBFIXPOSIX_VERSION}}" "${{env.OPENSSL_VERSION}}" "${{env.LIBTLS_VERSION}}"
