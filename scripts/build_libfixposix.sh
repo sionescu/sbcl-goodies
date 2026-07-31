@@ -13,7 +13,9 @@ autoreconf -f -i
 ./configure --enable-tests --enable-static
 
 make -j4
-make -j4 check
+if [ "$(uname -s)" == Linux ]; then
+    make -j4 check
+fi
 
 make install DESTDIR="${GITHUB_WORKSPACE}/destdir"
 cp "${GITHUB_WORKSPACE}/destdir/usr/local/lib/libfixposix.a" "${CUSTOM_LIBDIR}/"

@@ -43,20 +43,26 @@ diff -Naur sbcl.old/src/cold/base-target-features.lisp-expr sbcl.new/src/cold/ba
 diff -Naur sbcl.old/src/runtime/binaries.mk sbcl.new/src/runtime/binaries.mk
 --- sbcl.old/src/runtime/binaries.mk	1969-12-31 17:00:00.000000000 -0700
 +++ sbcl.new/src/runtime/binaries.mk	2026-03-23 17:46:17.693704049 -0600
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,24 @@
 +include sbcl.mk
 +
 +all: targets
 +BINARIES=sbcl sbcl.extras
 +targets: $(BINARIES)
 +
-+SLIBS=-Wl,--whole-archive $(WHOLE_ARCHIVES) -Wl,--no-whole-archive
++OS := $(shell uname -s)
++
++ifeq ($(OS), Linux)
++	SLIBS=$(WHOLE_ARCHIVES) -Wl,--no-whole-archive
++else ifeq ($(OS), Darwin)
++	SLIBS=$(WHOLE_ARCHIVES) -Wl
++endif
 +
 +sbcl: $(LIBSBCL)
 +	$(CC) -fno-pie -no-pie $(LINKFLAGS) -o $@ $(LIBSBCL) $(LIBS)
 +
 +sbcl.extras: $(LIBSBCL)
-+	$(CC) -fno-pie -no-pie $(LINKFLAGS) -o $@ $(LIBSBCL) $(SLIBS) $(LIBS)
++	$(CC) -fno-pie -no-pie $(LINKFLAGS) -o $@ $(USE_LIBSBCL) $(SLIBS) $(LIBS)
 +
 +clean:
 +	$(RM) $(BINARIES)
