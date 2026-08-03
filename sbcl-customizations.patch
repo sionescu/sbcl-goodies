@@ -1,6 +1,6 @@
 diff -Naur sbcl.old/binary-distribution.sh sbcl.new/binary-distribution.sh
---- sbcl.old/binary-distribution.sh	2026-02-27 11:08:08.000000000 -0700
-+++ sbcl.new/binary-distribution.sh	2026-03-23 17:51:53.968186151 -0600
+--- sbcl.old/binary-distribution.sh	2026-07-28 02:09:25.000000000 -0600
++++ sbcl.new/binary-distribution.sh	2026-08-02 18:13:40.781237660 -0600
 @@ -16,9 +16,9 @@
  
  tar -cf $b-binary.tar \
@@ -10,13 +10,13 @@ diff -Naur sbcl.old/binary-distribution.sh sbcl.new/binary-distribution.sh
      `grep '^LIBSBCL=' $b/src/runtime/sbcl.mk | cut -d= -f2- | while read lib; do echo $b/src/runtime/$lib; done` \
 -    $b/BUGS $b/COPYING $b/CREDITS $b/INSTALL $b/NEWS $b/README \
 +    $b/BUGS $b/COPYING $b/COPYING.zstd $b/CREDITS $b/INSTALL $b/NEWS $b/README \
+     $b/DOCUMENTATION \
      $b/install.sh $b/find-gnumake.sh $b/sbcl-pwd.sh $b/run-sbcl.sh \
      $b/doc/sbcl.1 \
-     $b/pubring.pgp \
 diff -Naur sbcl.old/make-target-2-load.lisp sbcl.new/make-target-2-load.lisp
---- sbcl.old/make-target-2-load.lisp	2026-02-27 11:08:08.000000000 -0700
-+++ sbcl.new/make-target-2-load.lisp	2026-03-23 17:30:06.972976888 -0600
-@@ -66,7 +66,9 @@
+--- sbcl.old/make-target-2-load.lisp	2026-07-28 02:09:25.000000000 -0600
++++ sbcl.new/make-target-2-load.lisp	2026-08-02 18:12:01.265214062 -0600
+@@ -70,7 +70,9 @@
          (cons
           sb-impl::!sbcl-architecture
           (read-from-string "
@@ -28,8 +28,8 @@ diff -Naur sbcl.old/make-target-2-load.lisp sbcl.new/make-target-2-load.lisp
             :BIG-ENDIAN :LITTLE-ENDIAN ; endianness: pick one and only one
             :BSD :UNIX :LINUX :WIN32 :DARWIN :SUNOS :ANDROID ; OS: pick one or more
 diff -Naur sbcl.old/src/cold/base-target-features.lisp-expr sbcl.new/src/cold/base-target-features.lisp-expr
---- sbcl.old/src/cold/base-target-features.lisp-expr	2026-02-27 11:08:09.000000000 -0700
-+++ sbcl.new/src/cold/base-target-features.lisp-expr	2026-03-23 17:30:06.973734069 -0600
+--- sbcl.old/src/cold/base-target-features.lisp-expr	2026-07-28 02:09:25.000000000 -0600
++++ sbcl.new/src/cold/base-target-features.lisp-expr	2026-08-02 18:12:01.265500673 -0600
 @@ -42,6 +42,9 @@
   ;; features present in all builds
   ;;
@@ -42,7 +42,7 @@ diff -Naur sbcl.old/src/cold/base-target-features.lisp-expr sbcl.new/src/cold/ba
   ;; FIXME: Isn't there a :x3jsomething feature which we should set too?
 diff -Naur sbcl.old/src/runtime/binaries.mk sbcl.new/src/runtime/binaries.mk
 --- sbcl.old/src/runtime/binaries.mk	1969-12-31 17:00:00.000000000 -0700
-+++ sbcl.new/src/runtime/binaries.mk	2026-03-23 17:46:17.693704049 -0600
++++ sbcl.new/src/runtime/binaries.mk	2026-08-02 18:12:01.265956887 -0600
 @@ -0,0 +1,18 @@
 +include sbcl.mk
 +
